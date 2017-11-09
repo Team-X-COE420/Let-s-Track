@@ -14,7 +14,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.teamx.letstrack.Application.Primary_User;
-import com.example.teamx.letstrack.ExternalInterface.DatabaseHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -59,6 +58,8 @@ public class Sign_In_Activity extends Activity implements View.OnClickListener {
 
         ProgressDialog=new ProgressDialog(this);
 
+        current_user = null;
+
     }
 
     private void Sign_in()
@@ -98,8 +99,11 @@ public class Sign_In_Activity extends Activity implements View.OnClickListener {
     }
 
     public void onPause() {
-        DatabaseHelper.writeSharedPreference(shared_pref,current_user);
-        DatabaseHelper.writetofile(Sign_In_Activity.this,current_user);
+
+        if (current_user != null) {
+            //DatabaseHelper.writeSharedPreference(shared_pref,current_user);
+            //DatabaseHelper.writetofile(Sign_In_Activity.this,current_user);
+        }
         super.onPause();
     }
 

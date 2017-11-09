@@ -6,4 +6,24 @@
     android:layout_height="match_parent"
     tools:context="com.example.teamx.letstrack.Activities.Home_Screen_Activity">
 
+    <Button
+        android:id="@+id/buttonSettings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Settings"
+        tools:layout_editor_absoluteX="136dp"
+        tools:layout_editor_absoluteY="231dp" />
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="345dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="Home Screen \n (To be implemented)"
+        android:textAlignment="center"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:layout_editor_absoluteY="56dp" />
+
 </android.support.constraint.ConstraintLayout>
