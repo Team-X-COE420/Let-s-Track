@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "145712225818",
+    "firebase_url": "https://letstrackv2.firebaseio.com",
+    "project_id": "letstrackv2",
+    "storage_bucket": "letstrackv2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:145712225818:android:e41c2646facb2518",
+        "android_client_info": {
+          "package_name": "com.example.teamx.letstrack.Activities"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "145712225818-auchohb0tf4a3dkauhls80h9odcruisa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.teamx.letstrack.Activities",
+            "certificate_hash": "6346b1c496dcce350c5bb806c17a5dc2bd3bd9dd"
+          }
+        },
+        {
+          "client_id": "145712225818-iag1agc7ddpfbhthjui577b22e69je6n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfiHFqNQYzhQl4fZGj7ygpIFn9I_5Lik8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "145712225818-iag1agc7ddpfbhthjui577b22e69je6n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
