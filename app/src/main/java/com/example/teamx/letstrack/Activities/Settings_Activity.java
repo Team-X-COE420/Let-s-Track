@@ -1,15 +1,15 @@
 package com.example.teamx.letstrack.Activities;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 
-public class Settings_Activity extends AppCompatActivity {
+public class Settings_Activity extends Activity {
 
     Button changePass;
     Button changeContact;

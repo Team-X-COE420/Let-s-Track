@@ -1,13 +1,13 @@
 package com.example.teamx.letstrack.Activities;
 
+import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class Start_up_Activity extends AppCompatActivity {
+public class Start_up_Activity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +20,7 @@ public class Start_up_Activity extends AppCompatActivity {
             startActivity(new Intent(this,Sign_In_Activity.class));
         else
             startActivity(new Intent(this,Home_Screen_Activity.class));
+        finish();
     }
 
 }

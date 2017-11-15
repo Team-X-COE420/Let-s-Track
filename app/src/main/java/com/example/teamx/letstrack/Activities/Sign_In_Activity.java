@@ -90,6 +90,7 @@ public class Sign_In_Activity extends Activity implements View.OnClickListener {
                     Toast.makeText(Sign_In_Activity.this,"Sign-in Successful",Toast.LENGTH_SHORT).show();
                     //TODO Retrieve User information from file/database
                     startActivity(new Intent(Sign_In_Activity.this,Home_Screen_Activity.class));
+                    finish();
                 }
                 else
                     Toast.makeText(Sign_In_Activity.this,"Sign-in unsuccessful",Toast.LENGTH_SHORT).show();

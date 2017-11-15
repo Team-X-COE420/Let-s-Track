@@ -19,6 +19,7 @@ public class Home_Screen_Activity extends Activity implements View.OnClickListen
         settings.setOnClickListener(this);
     }
 
+
     @Override
     public void onClick(View v) {
         startActivity(new Intent(this, Settings_Activity.class));
