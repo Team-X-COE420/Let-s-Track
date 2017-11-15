@@ -20,6 +20,10 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Register_Activity extends Activity implements View.OnClickListener {
 
@@ -107,7 +111,7 @@ public class Register_Activity extends Activity implements View.OnClickListener 
                     user = new Primary_User(email, phone, password);
                     user.getP_verification().sendVerificationtext();
 
-
+                    writeToFirestore();
                     startActivity(new Intent(Register_Activity.this, Verify_phone_activity.class));
                 } else {
                     Toast.makeText(Register_Activity.this, "Registration unSuccessful!", Toast.LENGTH_SHORT).show();
@@ -118,6 +122,17 @@ public class Register_Activity extends Activity implements View.OnClickListener 
 
     }
 
+    private void writeToFirestore() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        Map<String, Object> usermap = new HashMap<>();
+
+        usermap.put("Email", user.getEmail_ID());
+        usermap.put("phone_verified", user.isPhone_verified());
+        usermap.put("Contact No.", user.getP_verification().getPhone());
+
+        db.collection("Users").document(FirebaseAuth.getInstance().getUid().toString()).set(usermap);
+    }
     private void requestSmsPermission() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
 
