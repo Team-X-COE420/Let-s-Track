@@ -19,6 +19,9 @@ public class Home_Screen_Activity extends Activity implements View.OnClickListen
         settings.setOnClickListener(this);
     }
 
+    void displayemailverified() {
+
+    }
 
     @Override
     public void onClick(View v) {

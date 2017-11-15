@@ -100,15 +100,19 @@ public class Register_Activity extends Activity implements View.OnClickListener 
         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
+                ProgressDialog.dismiss();
                 if (task.isSuccessful()) {
                     Toast.makeText(Register_Activity.this, "Registration Successful!", Toast.LENGTH_SHORT).show();
                     mAuth.getCurrentUser().sendEmailVerification();
                     user = new Primary_User(email, phone, password);
                     user.getP_verification().sendVerificationtext();
 
+
                     startActivity(new Intent(Register_Activity.this, Verify_phone_activity.class));
-                } else
+                } else {
                     Toast.makeText(Register_Activity.this, "Registration unSuccessful!", Toast.LENGTH_SHORT).show();
+
+                }
             }
         });
 
