@@ -14,6 +14,11 @@ public class Position {
         return Name;
     }
 
+    public Position(String name, LatLng location) {
+        Name = name;
+        Location = location;
+    }
+
     public void setName(String name) {
         Name = name;
     }

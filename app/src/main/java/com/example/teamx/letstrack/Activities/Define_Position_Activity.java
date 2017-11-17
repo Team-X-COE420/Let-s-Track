@@ -66,7 +66,6 @@ public class Define_Position_Activity extends FragmentActivity implements OnMapR
         map.put(name, point);
 
         FirebaseFirestore.getInstance().collection("Users").document(FirebaseAuth.getInstance().getUid().toString()).set(map, SetOptions.merge());
-        //Update database with "Position" latlng
     }
 
 
