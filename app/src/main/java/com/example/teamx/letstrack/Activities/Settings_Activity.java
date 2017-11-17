@@ -53,8 +53,9 @@ public class Settings_Activity extends Activity {
             @Override
             public void onClick(View v) {
                 FirebaseAuth.getInstance().signOut();
-                Intent in = new Intent(Settings_Activity.this, Sign_In_Activity.class);
+                Intent in = new Intent(Settings_Activity.this, Start_up_Activity.class);
                 Settings_Activity.this.finish();
+                in.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(in);
             }
         });

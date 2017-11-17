@@ -93,6 +93,8 @@ public class DatabaseHelper {
                     }
                 }
             }
+        } else {
+            edit.putString("Code", user.getP_verification().getCode());
         }
     }
 
@@ -101,6 +103,16 @@ public class DatabaseHelper {
         Primary_User current_user=new Primary_User("","","");
 
         //TODO read from shared preference
+
+        current_user.setEmail_ID(shared_pref.getString("Email", ""));
+        current_user.setContact_No(shared_pref.getString("Contact_No", ""));
+        current_user.setPhone_verified(shared_pref.getBoolean("isPhoneVerified", false));
+
+        if (current_user.isPhone_verified()) {
+            String pos = shared_pref.getString("Home", "");
+            //pos.split(",");
+            //Position p=new Position("Home",new LatLng());
+        }
 
         return current_user;
     }

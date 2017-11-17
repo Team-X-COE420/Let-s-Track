@@ -11,6 +11,10 @@ import java.util.Random;
 
 public class PhoneVerification {
 
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
     private String phone;
 
     private String code;

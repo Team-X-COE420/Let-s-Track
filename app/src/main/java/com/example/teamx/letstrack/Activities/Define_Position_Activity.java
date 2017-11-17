@@ -28,7 +28,7 @@ public class Define_Position_Activity extends FragmentActivity implements OnMapR
     private GoogleMap mMap;
 
     private Button Submit;
-    private LatLng location;
+    private com.example.teamx.letstrack.Application.LatLng location;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +50,8 @@ public class Define_Position_Activity extends FragmentActivity implements OnMapR
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
-                mMap.addMarker(new MarkerOptions().position(new LatLng(latLng.latitude, latLng.longitude)).title("New Marker"));
+                location = new com.example.teamx.letstrack.Application.LatLng(latLng);
+                mMap.addMarker(new MarkerOptions().position(new LatLng(latLng.latitude, latLng.longitude)).title(getIntent().getStringExtra("Position")));
             }
         });
     }
@@ -113,7 +114,8 @@ public class Define_Position_Activity extends FragmentActivity implements OnMapR
 
                 @Override
                 public void onMarkerDragEnd(Marker marker) {
-                    location = marker.getPosition();
+                    LatLng loc = marker.getPosition();
+                    location.setLocation(loc);
                 }
             });
 

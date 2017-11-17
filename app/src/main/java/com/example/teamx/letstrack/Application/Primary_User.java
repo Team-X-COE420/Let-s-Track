@@ -1,7 +1,5 @@
 package com.example.teamx.letstrack.Application;
 
-import com.google.android.gms.maps.model.LatLng;
-
 import java.util.ArrayList;
 
 /**
@@ -13,6 +11,11 @@ public class Primary_User extends User {
     private String password;
     private ArrayList<Position> positions;
     private ArrayList<Contact> contacts;
+
+    public void setPhone_verified(Boolean phone_verified) {
+        this.phone_verified = phone_verified;
+    }
+
     private Boolean phone_verified;
     private String Current_Position;
 
@@ -26,11 +29,17 @@ public class Primary_User extends User {
         super(email_ID, contact_No);
         password = Password;
 
-        positions.add(new Position("Home", new LatLng(0, 0)));
-        positions.add(new Position("Work", new LatLng(0, 0)));
-        positions.add(new Position("Gym", new LatLng(0, 0)));
+        positions.add(new Position("Home", new com.example.teamx.letstrack.Application.LatLng(0, 0)));
+        positions.add(new Position("Work", new com.example.teamx.letstrack.Application.LatLng(0, 0)));
+        positions.add(new Position("Gym", new com.example.teamx.letstrack.Application.LatLng(0, 0)));
 
         p_verification = new PhoneVerification(contact_No);
+    }
+
+    @Override
+    public void setContact_No(String Contact_No) {
+        super.Contact_No = Contact_No;
+        p_verification.setPhone(Contact_No);
     }
 
     public PhoneVerification getP_verification() {
@@ -72,11 +81,19 @@ public class Primary_User extends User {
 
             }
 
+            c.setStatus(Contact_Status.Pending);
             contacts.add(c);
             return 1;
-
         }
+    }
 
+    public Contact getContact(String username) {
+        for (int i = 0; i < contacts.size(); i++) {
+            if (contacts.get(i).getUserName().compareTo(username) == 0) {
+                return contacts.get(i);
+            }
+        }
+        return null;
     }
 
     public int RemoveContact(String username) {
@@ -90,14 +107,14 @@ public class Primary_User extends User {
         return -1;
     }
 
-    private boolean isPosition(LatLng center, LatLng point) {
+    private boolean isPosition(com.example.teamx.letstrack.Application.LatLng center, com.example.teamx.letstrack.Application.LatLng point) {
         if (Math.pow((center.latitude - point.latitude), 2) + Math.pow((center.longitude - point.longitude), 2) <= 100)
             return true;
         else
             return false;
     }
 
-    public String updatePositionTag(LatLng location) {
+    public String updatePositionTag(com.example.teamx.letstrack.Application.LatLng location) {
         for (int i = 0; i < 3; i++) {
             if (isPosition(positions.get(i).getLocation(), location)) {
                 Current_Position = positions.get(i).getPosition_Name();
