@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import com.example.teamx.letstrack.Application.PhoneVerification;
 import com.example.teamx.letstrack.Application.Primary_User;
+import com.example.teamx.letstrack.ExternalInterface.DatabaseHelper;
 
 public class Verify_phone_activity extends Activity {
 
@@ -30,14 +31,21 @@ public class Verify_phone_activity extends Activity {
 
         buttonCodeSubmit = (Button) findViewById(R.id.buttonCodeSubmit);
 
+        saved_value = getSharedPreferences("Current_User", MODE_PRIVATE);
+
+        current_user = DatabaseHelper.readPreference(saved_value);
         buttonCodeSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 verify_phone();
             }
         });
+    }
 
-        saved_value = getSharedPreferences("Current_User", MODE_PRIVATE);
+    @Override
+    protected void onPause() {
+        DatabaseHelper.writeSharedPreference(getSharedPreferences("Current_User", MODE_PRIVATE), current_user);
+        super.onPause();
     }
 
     private void verify_phone()
@@ -46,20 +54,18 @@ public class Verify_phone_activity extends Activity {
         if (code.isEmpty())
             Toast.makeText(this, "Enter code", Toast.LENGTH_SHORT);
         else {
-            Primary_User current_user = new Primary_User(saved_value.getString("Email", ""), saved_value.getString("Contact_No.", ""), saved_value.getString("Password", ""));
+            PhoneVerification p = current_user.getP_verification();
 
-            String c = saved_value.getString("Code", "");
-
-            PhoneVerification p = new PhoneVerification(saved_value.getString("Contact_No.", ""));
-            p.setCode(c);
             current_user.verify_phone(p.verifyCode(code));
 
             if (current_user.isPhone_verified()) {
-                Toast.makeText(this, "Phone Verified", Toast.LENGTH_SHORT);
-                startActivity(new Intent(this, Home_Screen_Activity.class));
+                Toast.makeText(this, "Phone Verified", Toast.LENGTH_SHORT).show();
+                Intent in = new Intent(this, Home_Screen_Activity.class);
+                in.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(in);
                 finish();
             } else
-                Toast.makeText(this, "Incorrect code", Toast.LENGTH_SHORT);
+                Toast.makeText(this, "Incorrect code", Toast.LENGTH_SHORT).show();
         }
 
     }

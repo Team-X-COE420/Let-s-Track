@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:ems="10"
-            android:fontFamily="casual"
+            android:fontFamily="sans-serif"
             android:hint="Password"
             android:inputType="textPassword" />
 

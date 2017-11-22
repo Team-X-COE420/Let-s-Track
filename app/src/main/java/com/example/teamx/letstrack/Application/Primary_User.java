@@ -28,10 +28,16 @@ public class Primary_User extends User {
     public Primary_User(String email_ID, String contact_No, String Password) {
         super(email_ID, contact_No);
         password = Password;
-
-        positions.add(new Position("Home", new com.example.teamx.letstrack.Application.LatLng(0, 0)));
-        positions.add(new Position("Work", new com.example.teamx.letstrack.Application.LatLng(0, 0)));
-        positions.add(new Position("Gym", new com.example.teamx.letstrack.Application.LatLng(0, 0)));
+        phone_verified = false;
+        positions = new ArrayList<Position>();
+        contacts = new ArrayList<Contact>();
+        LatLng origin = new LatLng(0, 0);
+        Position Home = new Position("Home", origin);
+        Position Work = new Position("Work", origin);
+        Position Gym = new Position("Gym", origin);
+        positions.add(Home);
+        positions.add(Work);
+        positions.add(Gym);
 
         p_verification = new PhoneVerification(contact_No);
     }

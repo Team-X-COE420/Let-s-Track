@@ -26,4 +26,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         tools:layout_editor_absoluteY="56dp" />
 
+    <TextView
+        android:id="@+id/VerifyEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center_vertical|center_horizontal"
+        android:text="Verify Email Address"
+        android:textSize="30sp" />
+
 </android.support.constraint.ConstraintLayout>

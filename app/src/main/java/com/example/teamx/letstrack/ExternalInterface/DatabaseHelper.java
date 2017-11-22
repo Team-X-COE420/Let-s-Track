@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.example.teamx.letstrack.Application.Contact;
-import com.example.teamx.letstrack.Application.Contact_Status;
 import com.example.teamx.letstrack.Application.Position;
 import com.example.teamx.letstrack.Application.Primary_User;
 import com.google.firebase.auth.FirebaseAuth;
@@ -75,7 +74,7 @@ public class DatabaseHelper {
         edit.putBoolean("isPhoneVerified", user.isPhone_verified());
 
         if (user.isPhone_verified()) {
-            ArrayList<Position> positions = user.getPosition_Array();
+           /* ArrayList<Position> positions = user.getPosition_Array();
             for (int i = 0; i < 4; i++)
                 edit.putString(positions.get(i).getPosition_Name(), positions.get(i).getLocation().toString());
 
@@ -92,10 +91,11 @@ public class DatabaseHelper {
                         edit.putString("Contact_" + (i + 1) + "_CurrentPosition", c.getCurrent_position());
                     }
                 }
-            }
+            }*/
         } else {
             edit.putString("Code", user.getP_verification().getCode());
         }
+        edit.commit();
     }
 
     public static Primary_User readPreference(SharedPreferences shared_pref)
@@ -112,6 +112,8 @@ public class DatabaseHelper {
             String pos = shared_pref.getString("Home", "");
             //pos.split(",");
             //Position p=new Position("Home",new LatLng());
+        } else {
+            current_user.getP_verification().setCode(shared_pref.getString("Code", ""));
         }
 
         return current_user;

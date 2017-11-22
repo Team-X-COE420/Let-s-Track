@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.teamx.letstrack.Application.Primary_User;
+import com.example.teamx.letstrack.ExternalInterface.DatabaseHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -114,7 +115,7 @@ public class Register_Activity extends Activity implements View.OnClickListener 
                     writeToFirestore();
                     startActivity(new Intent(Register_Activity.this, Verify_phone_activity.class));
                 } else {
-                    Toast.makeText(Register_Activity.this, "Registration unSuccessful!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Register_Activity.this, "Registration Unsuccessful!", Toast.LENGTH_SHORT).show();
 
                 }
             }
@@ -157,11 +158,7 @@ public class Register_Activity extends Activity implements View.OnClickListener 
     public void onPause() {
 
         if (user != null) {
-            SharedPreferences.Editor edit = shared_pref.edit();
-            edit.putString("Email", user.getEmail_ID());
-            edit.putString("Contact_No", user.getContact_No());
-            edit.putBoolean("Phone_verified", user.isPhone_verified());
-            edit.putString("Code", user.getP_verification().getCode());
+            DatabaseHelper.writeSharedPreference(shared_pref, user);
         }
 
         super.onPause();
