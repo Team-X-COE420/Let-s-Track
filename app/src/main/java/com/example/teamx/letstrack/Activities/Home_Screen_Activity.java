@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import com.example.teamx.letstrack.Application.Primary_User;
 import com.example.teamx.letstrack.ExternalInterface.DatabaseHelper;
-import com.google.firebase.auth.FirebaseAuth;
 
 public class Home_Screen_Activity extends Activity implements View.OnClickListener {
 
@@ -30,12 +29,12 @@ public class Home_Screen_Activity extends Activity implements View.OnClickListen
 
         Verify.setVisibility(View.INVISIBLE);
 
-        if (!FirebaseAuth.getInstance().getCurrentUser().isEmailVerified()) {
+        /*if (!FirebaseAuth.getInstance().getCurrentUser().isEmailVerified()) {
             displayemailverified();
         }
         if (!current_user.isPhone_verified()) {
             displayPhoneverified();
-        }
+        }*/
 
 
         settings.setOnClickListener(this);
@@ -50,8 +49,8 @@ public class Home_Screen_Activity extends Activity implements View.OnClickListen
     }
 
     void displayPhoneverified() {
-        settings.setEnabled(false);
-        settings.setVisibility(View.INVISIBLE);
+        //settings.setEnabled(false);
+        //settings.setVisibility(View.INVISIBLE);
 
         Verify.setText("Verify Contact Number");
         Verify.setVisibility(View.VISIBLE);
