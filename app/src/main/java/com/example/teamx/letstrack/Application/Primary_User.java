@@ -19,7 +19,7 @@ public class Primary_User extends User {
     private Boolean phone_verified;
     private String Current_Position;
 
-    private static final int radius = 100;
+    private static final int radius = 1;
 
     private static final String Other = "Other";
 
@@ -114,7 +114,7 @@ public class Primary_User extends User {
     }
 
     private boolean isPosition(com.example.teamx.letstrack.Application.LatLng center, com.example.teamx.letstrack.Application.LatLng point) {
-        if (Math.pow((center.latitude - point.latitude), 2) + Math.pow((center.longitude - point.longitude), 2) <= 100)
+        if (Math.pow((center.latitude - point.latitude), 2) + Math.pow((center.longitude - point.longitude), 2) <= 1)
             return true;
         else
             return false;
