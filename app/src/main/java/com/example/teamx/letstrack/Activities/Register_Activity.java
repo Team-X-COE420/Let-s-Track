@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,6 +19,8 @@ import android.widget.Toast;
 import com.example.teamx.letstrack.Application.Primary_User;
 import com.example.teamx.letstrack.ExternalInterface.DatabaseHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -113,7 +116,7 @@ public class Register_Activity extends Activity implements View.OnClickListener 
                     user.getP_verification().sendVerificationtext();
 
                     writeToFirestore();
-                    startActivity(new Intent(Register_Activity.this, Verify_phone_activity.class));
+
                 } else {
                     Toast.makeText(Register_Activity.this, "Registration Unsuccessful!", Toast.LENGTH_SHORT).show();
 
@@ -132,7 +135,26 @@ public class Register_Activity extends Activity implements View.OnClickListener 
         usermap.put("phone_verified", user.isPhone_verified());
         usermap.put("Contact No.", user.getP_verification().getPhone());
 
-        db.collection("Users").document(FirebaseAuth.getInstance().getUid().toString()).set(usermap);
+        db.collection("Users")
+                .document(FirebaseAuth.getInstance().getUid().toString())
+                .set(usermap).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(TAG, "Document Snapshot Successfully written");
+                Toast.makeText(getApplicationContext(), "Document Snapshot added", Toast.LENGTH_SHORT)
+                        .show();
+                startActivity(new Intent(Register_Activity.this, Verify_phone_activity.class));
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "Error Writing Document", e);
+                Toast.makeText(getApplicationContext(), "Failed to add Document Snapshot", Toast.LENGTH_SHORT)
+                        .show();
+                DatabaseHelper.writetofile(getApplicationContext(), user);
+            }
+        });
+
     }
     private void requestSmsPermission() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {

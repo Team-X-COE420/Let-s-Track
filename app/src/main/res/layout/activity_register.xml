@@ -52,6 +52,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:ems="10"
+            android:fontFamily="sans-serif"
             android:hint="Confirm Password"
             android:inputType="textPassword" />
 
