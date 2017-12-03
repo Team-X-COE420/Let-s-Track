@@ -7,8 +7,7 @@ package com.example.teamx.letstrack.Application;
 public enum Contact_Status {
     Accepted(1),
     Denied(-1),
-    Pending(0),
-    NoContact(5);
+    Pending(0);
 
     private final int value;
 

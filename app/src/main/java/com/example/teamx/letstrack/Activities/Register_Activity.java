@@ -10,7 +10,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,17 +18,11 @@ import android.widget.Toast;
 import com.example.teamx.letstrack.Application.Primary_User;
 import com.example.teamx.letstrack.ExternalInterface.DatabaseHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class Register_Activity extends Activity implements View.OnClickListener {
+public class Register_Activity extends Activity implements View.OnClickListener, DatabaseHandler {
 
     private static String TAG;
 
@@ -115,7 +108,7 @@ public class Register_Activity extends Activity implements View.OnClickListener 
                     user = new Primary_User(email, phone, password);
                     user.getP_verification().sendVerificationtext();
 
-                    writeToFirestore();
+                    DatabaseHelper.writeUserToDatabase(Register_Activity.this, user);
 
                 } else {
                     Toast.makeText(Register_Activity.this, "Registration Unsuccessful!", Toast.LENGTH_SHORT).show();
@@ -126,36 +119,6 @@ public class Register_Activity extends Activity implements View.OnClickListener 
 
     }
 
-    private void writeToFirestore() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        Map<String, Object> usermap = new HashMap<>();
-
-        usermap.put("Email", user.getEmail_ID());
-        usermap.put("phone_verified", user.isPhone_verified());
-        usermap.put("Contact No.", user.getP_verification().getPhone());
-
-        db.collection("Users")
-                .document(FirebaseAuth.getInstance().getUid().toString())
-                .set(usermap).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d(TAG, "Document Snapshot Successfully written");
-                Toast.makeText(getApplicationContext(), "Document Snapshot added", Toast.LENGTH_SHORT)
-                        .show();
-                startActivity(new Intent(Register_Activity.this, Verify_phone_activity.class));
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d(TAG, "Error Writing Document", e);
-                Toast.makeText(getApplicationContext(), "Failed to add Document Snapshot", Toast.LENGTH_SHORT)
-                        .show();
-                DatabaseHelper.writetofile(getApplicationContext(), user);
-            }
-        });
-
-    }
     private void requestSmsPermission() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
 
@@ -187,7 +150,22 @@ public class Register_Activity extends Activity implements View.OnClickListener 
     }
 
     @Override
+    public void UpdateUI(boolean res) {
+        if (res) {
+            Toast.makeText(this, "Document Snapshot added to the Collection!", Toast.LENGTH_SHORT)
+                    .show();
+
+            startActivity(new Intent(this, Verify_phone_activity.class));
+        } else {
+            Toast.makeText(this, "Failed to add document snapshot to collections", Toast.LENGTH_SHORT)
+                    .show();
+        }
+    }
+
+    @Override
     public void onClick(View v) {
         Register_User();
     }
+
+
 }

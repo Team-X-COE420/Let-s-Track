@@ -2,17 +2,30 @@ package com.example.teamx.letstrack.ExternalInterface;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
+import android.util.Log;
 
+import com.example.teamx.letstrack.Activities.DatabaseHandler;
 import com.example.teamx.letstrack.Application.Contact;
+import com.example.teamx.letstrack.Application.Contact_Status;
+import com.example.teamx.letstrack.Application.LatLng;
 import com.example.teamx.letstrack.Application.Position;
 import com.example.teamx.letstrack.Application.Primary_User;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Aranyak on 08-Nov-17.
@@ -74,7 +87,7 @@ public class DatabaseHelper {
         edit.putBoolean("isPhoneVerified", user.isPhone_verified());
 
         if (user.isPhone_verified()) {
-           /* ArrayList<Position> positions = user.getPosition_Array();
+            ArrayList<Position> positions = user.getPosition_Array();
             for (int i = 0; i < 4; i++)
                 edit.putString(positions.get(i).getPosition_Name(), positions.get(i).getLocation().toString());
 
@@ -91,7 +104,7 @@ public class DatabaseHelper {
                         edit.putString("Contact_" + (i + 1) + "_CurrentPosition", c.getCurrent_position());
                     }
                 }
-            }*/
+            }
         } else {
             edit.putString("Code", user.getP_verification().getCode());
         }
@@ -110,8 +123,9 @@ public class DatabaseHelper {
 
         if (current_user.isPhone_verified()) {
             String pos = shared_pref.getString("Home", "");
-            //pos.split(",");
-            //Position p=new Position("Home",new LatLng());
+            String[] loc = pos.split(",");
+            Position p = new Position("Home", new LatLng(Double.parseDouble(loc[0]), Double.parseDouble(loc[1])));
+
         } else {
             current_user.getP_verification().setCode(shared_pref.getString("Code", ""));
         }
@@ -133,4 +147,55 @@ public class DatabaseHelper {
         }
         return current_user;
     }
+
+    public static void writeUserToDatabase(final DatabaseHandler a, Primary_User user) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        Map<String, Object> usermap = new HashMap<>();
+        usermap.put("Email", user.getEmail_ID());
+        usermap.put("phone_verified", user.isPhone_verified());
+        usermap.put("Contact No.", user.getP_verification().getPhone());
+
+        db.collection("Users")
+                .document(FirebaseAuth.getInstance().getUid().toString())
+                .set(usermap).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d("Firestore", "Document Snapshot Successfully written");
+
+                a.UpdateUI(true);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d("Firestore", "Error Writing Document", e);
+                a.UpdateUI(false);
+
+            }
+        });
+    }
+
+    public static void addcontact(final DatabaseHandler a, final String email) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Map<String, Integer> map = new HashMap<>();
+
+        map.put(email, 0);
+
+        db.collection("Contacts").document(FirebaseAuth.getInstance().getUid().toString()).set(map, SetOptions.merge()).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+                if (task.isSuccessful()) {
+                    Log.d("Firestore", "Sent a contact request to " + email);
+                } else {
+                    Log.d("Firestore", "Failed to send a contact request to " + email);
+                }
+
+                a.UpdateUI(task.isSuccessful());
+            }
+        });
+    }
+
+
+
 }
