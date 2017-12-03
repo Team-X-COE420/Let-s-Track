@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.example.teamx.letstrack.Activities.DatabaseHandler;
 import com.example.teamx.letstrack.Application.Contact;
 import com.example.teamx.letstrack.Application.Contact_Status;
 import com.example.teamx.letstrack.Application.LatLng;
@@ -16,8 +15,10 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -157,7 +158,7 @@ public class DatabaseHelper {
         usermap.put("Contact No.", user.getP_verification().getPhone());
 
         db.collection("Users")
-                .document(FirebaseAuth.getInstance().getUid().toString())
+                .document(FirebaseAuth.getInstance().getCurrentUser().getEmail())
                 .set(usermap).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -175,27 +176,153 @@ public class DatabaseHelper {
         });
     }
 
-    public static void addcontact(final DatabaseHandler a, final String email) {
+    private static Firebase_Contact get_contact_info_from_email(String email) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        Map<String, Integer> map = new HashMap<>();
+        final Firebase_Contact contact = new Firebase_Contact();
+        contact.setEmail(email);
+        db.collection("Users")
+                .document(email)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        DocumentSnapshot doc = task.getResult();
+                        String phone = (String) doc.get("Contact No.");
+                        contact.setContact_number(phone);
+                    }
+                });
+        return contact;
+    }
 
-        map.put(email, 0);
+    private static Firebase_Contact get_contact_info_from_phone(String phone) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final Firebase_Contact contact = new Firebase_Contact();
 
-        db.collection("Contacts").document(FirebaseAuth.getInstance().getUid().toString()).set(map, SetOptions.merge()).addOnCompleteListener(new OnCompleteListener<Void>() {
+
+        if (phone.startsWith("00"))
+            phone = "+" + phone.substring(2);
+        else if (phone.startsWith("05"))
+            phone = "+971" + phone.substring(1);
+
+        contact.setContact_number(phone);
+
+        db.collection("Users")
+                .whereEqualTo("Contact No.", phone)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (DocumentSnapshot doc : task.getResult()) {
+                                String email = (String) doc.get("Email");
+                                contact.setEmail(email);
+                            }
+                        }
+                    }
+                });
+
+        return contact;
+    }
+
+    public static void addcontact(final DatabaseHandler a, final String receiver_email, String receiver_phone) {
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        final Firebase_Contact contact;
+
+        if (receiver_email == null)
+            contact = get_contact_info_from_phone(receiver_phone);
+        else if (receiver_phone == null)
+            contact = get_contact_info_from_email(receiver_email);
+        else
+            contact = new Firebase_Contact(receiver_email, receiver_phone);
+
+
+        final String sender_email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+
+        db.collection("Contacts")
+                .document(sender_email)
+                .collection("Pending")
+                .document(receiver_email)
+                .set(contact)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                        if (task.isSuccessful()) {
+                            Log.d("Firestore", "Sent a contact request from sender to " + receiver_email);
+                            db.collection("Contacts")
+                                    .document(receiver_email)
+                                    .collection("Pending")
+                                    .document().set(contact)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful())
+                                                Log.d("Firestore", "Request added to pending stack.");
+                                            else
+                                                Log.d("Firestore", "Request not added to pending stack");
+
+                                        }
+                                    });
+                        } else {
+                            Log.d("Firestore", "Failed to send a contact request to " + receiver_email);
+                        }
+
+                        a.UpdateUI(task.isSuccessful());
+                    }
+
+                });
+
+
+    }
+
+    public static void contact_requests(final DatabaseHandler a) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        DocumentReference docRef = db.collection("Contacts").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+
+        docRef.collection("Pending").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
-            public void onComplete(@NonNull Task<Void> task) {
-
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
-                    Log.d("Firestore", "Sent a contact request to " + email);
-                } else {
-                    Log.d("Firestore", "Failed to send a contact request to " + email);
+                    for (DocumentSnapshot doc : task.getResult()) {
+                        Log.d("Firestore", "Document received");
+                        //doc.
+                    }
                 }
-
-                a.UpdateUI(task.isSuccessful());
             }
         });
     }
 
+    private static class Firebase_Contact {
+        String email;
+        String contact_number;
 
+        public Firebase_Contact(String email, String contact_number) {
+            this.email = email;
+            this.contact_number = contact_number;
+        }
+
+        public Firebase_Contact() {
+            email = "";
+            contact_number = "";
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public String getContact_number() {
+            return contact_number;
+        }
+
+        public void setContact_number(String contact_number) {
+            this.contact_number = contact_number;
+        }
+    }
 
 }

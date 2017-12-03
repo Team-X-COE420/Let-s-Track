@@ -10,17 +10,21 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.teamx.letstrack.Application.Primary_User;
+import com.example.teamx.letstrack.ExternalInterface.DatabaseHandler;
 import com.example.teamx.letstrack.ExternalInterface.DatabaseHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+
+import java.util.ArrayList;
 
 public class Register_Activity extends Activity implements View.OnClickListener, DatabaseHandler {
 
@@ -65,7 +69,8 @@ public class Register_Activity extends Activity implements View.OnClickListener,
         final String email = EditTextEmail.getText().toString().trim();
         final String password = EditTextPassword.getText().toString().trim();
         final String Confirmpassword = EditTextConfirmPassword.getText().toString().trim();
-        final String phone = EditTextPhone.getText().toString().trim();
+        final String contact = EditTextPhone.getText().toString().trim();
+        String phone = contact;
 
         if (TextUtils.isEmpty(email)) {
             //email field is empty
@@ -98,6 +103,11 @@ public class Register_Activity extends Activity implements View.OnClickListener,
 
         mAuth = FirebaseAuth.getInstance();
 
+        if (phone.startsWith("00"))
+            phone = "+" + phone.substring(2);
+        else if (phone.startsWith("05"))
+            phone = "+971" + phone.substring(1);
+
         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -105,14 +115,14 @@ public class Register_Activity extends Activity implements View.OnClickListener,
                 if (task.isSuccessful()) {
                     Toast.makeText(Register_Activity.this, "Registration Successful!", Toast.LENGTH_SHORT).show();
                     mAuth.getCurrentUser().sendEmailVerification();
-                    user = new Primary_User(email, phone, password);
+                    user = new Primary_User(email, contact, password);
                     user.getP_verification().sendVerificationtext();
-
+                    Log.d("FirebaseAuth", "User created with UID: " + mAuth.getCurrentUser().getUid());
                     DatabaseHelper.writeUserToDatabase(Register_Activity.this, user);
 
                 } else {
                     Toast.makeText(Register_Activity.this, "Registration Unsuccessful!", Toast.LENGTH_SHORT).show();
-
+                    Log.d("FirebaseAuth", "User not created.");
                 }
             }
         });
@@ -160,6 +170,11 @@ public class Register_Activity extends Activity implements View.OnClickListener,
             Toast.makeText(this, "Failed to add document snapshot to collections", Toast.LENGTH_SHORT)
                     .show();
         }
+    }
+
+    @Override
+    public void DisplayContactRequests(ArrayList<String> req_emails) {
+
     }
 
     @Override
