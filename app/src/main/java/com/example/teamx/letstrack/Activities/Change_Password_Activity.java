@@ -43,6 +43,11 @@ public class Change_Password_Activity extends Activity implements View.OnClickLi
         change_password();
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                //
+//  Change Password in Firebase Auth                                                              //
+//                                                                                                //
+////////////////////////////////////////////////////////////////////////////////////////////////////
     private void change_password() {
         String current = oldpass.getText().toString().trim();
         final String newpass = newpassword.getText().toString().trim();

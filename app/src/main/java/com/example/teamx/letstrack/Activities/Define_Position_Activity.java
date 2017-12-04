@@ -56,6 +56,12 @@ public class Define_Position_Activity extends FragmentActivity implements OnMapR
         });
     }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                //
+//  Define and submit locations for labels on map                                                              //
+//                                                                                                //
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
     private void SubmitLocation() {
         Intent i = getIntent();
         String name = i.getStringExtra("Position");

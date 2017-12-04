@@ -286,8 +286,8 @@ public class DatabaseHelper {
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
                     for (DocumentSnapshot doc : task.getResult()) {
-                        Log.d("Firestore", "Document received");
-                        //doc.
+                        Log.d("Firestore", "Document received with content: " + doc.getData());
+
                     }
                 }
             }
