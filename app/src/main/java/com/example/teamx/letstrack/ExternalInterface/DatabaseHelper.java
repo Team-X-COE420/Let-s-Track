@@ -248,6 +248,7 @@ public class DatabaseHelper {
         });
     }
 
+
     private static class Firebase_Contact {
         String email;
         String contact_number;

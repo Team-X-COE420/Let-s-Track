@@ -1,10 +1,15 @@
 package com.example.teamx.letstrack.Activities;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -24,23 +29,24 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
 public class Register_Activity extends Activity implements View.OnClickListener, UIConnector {
 
     private static String TAG;
-
+    AlertDialog.Builder dialog;
     private Button ButtonRegister;
-
     private EditText EditTextEmail;
     private EditText EditTextPassword;
     private EditText EditTextConfirmPassword;
     private EditText EditTextPhone;
-
     private android.app.ProgressDialog ProgressDialog;
-
     private FirebaseAuth mAuth;
+
+    private AlertDialog d;
 
     private Primary_User user;
 
@@ -51,14 +57,30 @@ public class Register_Activity extends Activity implements View.OnClickListener,
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        ButtonRegister = (Button) findViewById(R.id.buttonRegister);
+        ButtonRegister = findViewById(R.id.buttonRegister);
 
-        EditTextEmail = (EditText) findViewById(R.id.editTextEmail);
-        EditTextPassword = (EditText) findViewById(R.id.editTextPassword);
-        EditTextConfirmPassword = (EditText) findViewById(R.id.editTextConfirmPassword);
-        EditTextPhone = (EditText) findViewById(R.id.editTextPhone);
+        EditTextEmail = findViewById(R.id.editTextEmail);
+        EditTextPassword = findViewById(R.id.editTextPassword);
+        EditTextConfirmPassword = findViewById(R.id.editTextConfirmPassword);
+        EditTextPhone = findViewById(R.id.editTextPhone);
 
         ProgressDialog = new ProgressDialog(this);
+
+        dialog = new AlertDialog.Builder(Register_Activity.this);
+        dialog.setCancelable(true);
+        dialog.setMessage("Account with given email ID already exists. Would you like to ");
+        dialog.setPositiveButton("Reset Password?", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                startActivity(new Intent(Register_Activity.this, Forgot_Password_Activity.class));
+            }
+        });
+        dialog.setNegativeButton("Log in?", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                startActivity(new Intent(Register_Activity.this, Sign_In_Activity.class));
+            }
+        });
 
         ButtonRegister.setOnClickListener(this);
 
@@ -122,12 +144,34 @@ public class Register_Activity extends Activity implements View.OnClickListener,
                     user.Register(Register_Activity.this);
 
                 } else {
+
                     Toast.makeText(Register_Activity.this, "Registration Unsuccessful!", Toast.LENGTH_SHORT).show();
+                    if (!isOnline())
+                        Toast.makeText(Register_Activity.this, "Check your internet connection", Toast.LENGTH_SHORT).show();
+                    else {
+                        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+                        db.collection("Users").document(email).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                if (task.getResult() == null) {
+                                    d = dialog.create();
+                                    d.show();
+                                }
+                            }
+                        });
+                    }
                     Log.d("FirebaseAuth", "User not created.");
                 }
             }
         });
 
+    }
+
+    private boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo ni = cm.getActiveNetworkInfo();
+        return (ni != null && ni.isConnected());
     }
 
     private void requestSmsPermission() {
@@ -156,6 +200,9 @@ public class Register_Activity extends Activity implements View.OnClickListener,
         if (user != null) {
             DatabaseHelper.writeSharedPreference(shared_pref, user);
         }
+
+        if (d != null)
+            d.dismiss();
 
         super.onPause();
     }
