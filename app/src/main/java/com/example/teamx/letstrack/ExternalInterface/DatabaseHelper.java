@@ -1,6 +1,5 @@
 package com.example.teamx.letstrack.ExternalInterface;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -10,6 +9,7 @@ import com.example.teamx.letstrack.Application.Contact_Status;
 import com.example.teamx.letstrack.Application.LatLng;
 import com.example.teamx.letstrack.Application.Position;
 import com.example.teamx.letstrack.Application.Primary_User;
+import com.example.teamx.letstrack.Application.UIConnector;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -20,10 +20,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,51 +29,6 @@ import java.util.Map;
  */
 
 public class DatabaseHelper {
-
-    static String fileName;
-
-    public static void writetofile(Context context, Primary_User u) {
-        fileName = FirebaseAuth.getInstance().getUid();
-        File file = new File(context.getFilesDir(), fileName);
-
-        file.setWritable(true);
-        try {
-            if (!file.exists())
-                file.createNewFile();
-
-            FileWriter fileWriter = new FileWriter(file);
-            BufferedWriter writer = new BufferedWriter(fileWriter);
-            writer.write(u.getEmail_ID());
-            writer.newLine();
-            writer.write(u.getContact_No());
-            writer.newLine();
-            writer.write(u.isPhone_verified().toString());
-            writer.newLine();
-            if (u.isPhone_verified()) {
-                ArrayList<Position> positions = u.getPosition_Array();
-                for (int i = 0; i < 4; i++) {
-                    writer.write(positions.get(i).getPosition_Name() +
-                            " " + positions.get(i).getLocation().latitude +
-                            " " + positions.get(i).getLocation().longitude);
-                    writer.newLine();
-                }
-
-                ArrayList<Contact> contacts = u.getContact_Array();
-                for (int i = 0; i < 5; i++) {
-                    writer.write(contacts.get(i).getUserName() +
-                            " " + contacts.get(i).getContact_No() +
-                            " " + contacts.get(i).getEmail_ID() +
-                            " " + contacts.get(i).getCurrent_position() +
-                            " " + contacts.get(i).getStatus().getValue());
-                    writer.newLine();
-                }
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        file.setWritable(false);
-    }
 
     public static void writeSharedPreference(SharedPreferences shared_pref, Primary_User user) {
         SharedPreferences.Editor edit = shared_pref.edit();
@@ -134,22 +85,7 @@ public class DatabaseHelper {
         return current_user;
     }
 
-    public static Primary_User readFile(FirebaseAuth mAuth)
-    {
-        Primary_User current_user=new Primary_User("","","");
-        String file_name=mAuth.getUid();
-
-        File file=new File(file_name);
-        if(file.exists())
-        {
-            //TODO read from file
-
-
-        }
-        return current_user;
-    }
-
-    public static void writeUserToDatabase(final DatabaseHandler a, Primary_User user) {
+    public static void writeUserToDatabase(final UIConnector a, Primary_User user) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         Map<String, Object> usermap = new HashMap<>();
@@ -224,7 +160,7 @@ public class DatabaseHelper {
         return contact;
     }
 
-    public static void addcontact(final DatabaseHandler a, final String receiver_email, String receiver_phone) {
+    public static void addcontact(final UIConnector a, final String receiver_email, String receiver_phone) {
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         final Firebase_Contact contact;
@@ -276,7 +212,7 @@ public class DatabaseHelper {
 
     }
 
-    public static void contact_requests(final DatabaseHandler a) {
+    public static void contact_requests(final UIConnector a) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         DocumentReference docRef = db.collection("Contacts").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
@@ -290,6 +226,24 @@ public class DatabaseHelper {
 
                     }
                 }
+            }
+        });
+    }
+
+    public static void readUserinfo(final String email, final Primary_User user) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("Users").document(email).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot doc = task.getResult();
+                    user.setContact_No(doc.getString("Contact No."));
+                    user.verify_phone(doc.getBoolean("phone_verified"));
+                    user.setEmail_ID(email);
+                    //TODO read locations and contact info
+                }
+
             }
         });
     }

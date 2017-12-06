@@ -16,8 +16,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.teamx.letstrack.Application.Contact;
 import com.example.teamx.letstrack.Application.Primary_User;
-import com.example.teamx.letstrack.ExternalInterface.DatabaseHandler;
+import com.example.teamx.letstrack.Application.UIConnector;
 import com.example.teamx.letstrack.ExternalInterface.DatabaseHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -26,7 +27,7 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 
-public class Register_Activity extends Activity implements View.OnClickListener, DatabaseHandler {
+public class Register_Activity extends Activity implements View.OnClickListener, UIConnector {
 
     private static String TAG;
 
@@ -118,7 +119,7 @@ public class Register_Activity extends Activity implements View.OnClickListener,
                     user = new Primary_User(email, contact, password);
                     user.getP_verification().sendVerificationtext();
                     Log.d("FirebaseAuth", "User created with UID: " + mAuth.getCurrentUser().getUid());
-                    DatabaseHelper.writeUserToDatabase(Register_Activity.this, user);
+                    user.Register(Register_Activity.this);
 
                 } else {
                     Toast.makeText(Register_Activity.this, "Registration Unsuccessful!", Toast.LENGTH_SHORT).show();
@@ -174,7 +175,12 @@ public class Register_Activity extends Activity implements View.OnClickListener,
 
     @Override
     public void DisplayContactRequests(ArrayList<String> req_emails) {
+        //DO NOTHING
+    }
 
+    @Override
+    public void DisplayCurrentContacts(ArrayList<Contact> contacts) {
+        //DO NOTHING
     }
 
     @Override

@@ -45,6 +45,7 @@ public class Settings_Activity extends Activity {
             @Override
             public void onClick(View v) {
                 //TODO create Change/Modify Position activity and link
+                startActivity(new Intent(Settings_Activity.this, Define_Position_Activity.class));
                 Toast.makeText(Settings_Activity.this, "Change/Modify position activity is opened", Toast.LENGTH_SHORT).show();
             }
         });

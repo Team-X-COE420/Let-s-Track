@@ -7,26 +7,23 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.teamx.letstrack.Application.Primary_User;
 import com.example.teamx.letstrack.ExternalInterface.DatabaseHelper;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.io.File;
 
 public class Home_Screen_Activity extends Activity implements View.OnClickListener {
 
-    Button settings;
+
     Button action;
+
+    ImageView settings;
+    ImageView requests;
 
     TextView message;
     TextView codeexists;
@@ -38,16 +35,15 @@ public class Home_Screen_Activity extends Activity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_screen);
 
-        File f = new File("/data/data/com.example.teamx.letstrack/shared_prefs/Current_User.xml");
-        if (f.exists()) {
-            current_user = DatabaseHelper.readPreference(getSharedPreferences("Current_User", MODE_PRIVATE));
-        } else {
-            readuserfromfirestore();
-        }
+        readuserfromfirestore();
+
         message = (TextView) findViewById(R.id.txtmessage);
         codeexists = (TextView) findViewById(R.id.txtCodeExists);
 
         codeexists.setEnabled(false);
+        settings = (ImageView) findViewById(R.id.imgSettings);
+
+        requests = (ImageView) findViewById(R.id.imgrequests);
 
         action = (Button) findViewById(R.id.btnaction);
 
@@ -104,30 +100,20 @@ public class Home_Screen_Activity extends Activity implements View.OnClickListen
         });
 
 
-        settings = (Button) findViewById(R.id.buttonSettings);
-
+        requests.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //TODO launch activity to view friend requests
+            }
+        });
 
         settings.setOnClickListener(this);
     }
 
     private void readuserfromfirestore() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DocumentReference docRef = db.collection("Users").document(FirebaseAuth.getInstance().getUid().toString());
+        current_user = new Primary_User(null, null, null);
+        DatabaseHelper.readUserinfo(FirebaseAuth.getInstance().getCurrentUser().getEmail(), current_user);
 
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot doc = task.getResult();
-                    if (doc != null) {
-                        Log.d("Firestore", "Document Retrieved");
-                    } else {
-                        Log.d("Firestore", "Document does not exist");
-                    }
-
-                }
-            }
-        });
     }
 
 

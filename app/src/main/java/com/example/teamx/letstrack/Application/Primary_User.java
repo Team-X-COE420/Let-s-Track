@@ -1,5 +1,9 @@
 package com.example.teamx.letstrack.Application;
 
+import android.location.Location;
+
+import com.example.teamx.letstrack.ExternalInterface.DatabaseHelper;
+
 import java.util.ArrayList;
 
 /**
@@ -8,22 +12,14 @@ import java.util.ArrayList;
 
 public class Primary_User extends User {
 
+    private static final int radius = 100;
+    private static final String Other = "Other";
+    PhoneVerification p_verification;
     private String password;
     private ArrayList<Position> positions;
     private ArrayList<Contact> contacts;
-
-    public void setPhone_verified(Boolean phone_verified) {
-        this.phone_verified = phone_verified;
-    }
-
     private Boolean phone_verified;
     private String Current_Position;
-
-    private static final int radius = 1;
-
-    private static final String Other = "Other";
-
-    PhoneVerification p_verification;
 
     public Primary_User(String email_ID, String contact_No, String Password) {
         super(email_ID, contact_No);
@@ -40,6 +36,10 @@ public class Primary_User extends User {
         positions.add(Gym);
 
         p_verification = new PhoneVerification(contact_No);
+    }
+
+    public void setPhone_verified(Boolean phone_verified) {
+        this.phone_verified = phone_verified;
     }
 
     @Override
@@ -114,7 +114,10 @@ public class Primary_User extends User {
     }
 
     private boolean isPosition(com.example.teamx.letstrack.Application.LatLng center, com.example.teamx.letstrack.Application.LatLng point) {
-        if (Math.pow((center.latitude - point.latitude), 2) + Math.pow((center.longitude - point.longitude), 2) <= 1)
+        float[] results = new float[3];
+        Location.distanceBetween(center.latitude, center.longitude, point.latitude, point.longitude, results);
+
+        if (results[0] < radius)
             return true;
         else
             return false;
@@ -131,4 +134,14 @@ public class Primary_User extends User {
         Current_Position = Other;
         return Current_Position;
     }
+
+    public void Register(UIConnector activity) {
+        DatabaseHelper.writeUserToDatabase(activity, this);
+    }
+
+    public void RetrieveInfo() {
+        DatabaseHelper.readUserinfo(this.Email_ID, this);
+    }
+
+
 }

@@ -54,7 +54,8 @@
         <activity android:name=".Forgot_Password_Activity" />
         <activity android:name=".Change_Password_Activity" />
         <activity android:name=".Verify_phone_activity" />
-        <activity android:name=".Update_Contact_activity"></activity>
+        <activity android:name=".Update_Contact_activity" />
+        <activity android:name=".Requests_Activity"></activity>
     </application>
 
 </manifest>

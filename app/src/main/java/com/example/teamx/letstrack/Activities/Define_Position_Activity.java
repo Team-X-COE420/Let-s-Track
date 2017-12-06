@@ -2,6 +2,7 @@ package com.example.teamx.letstrack.Activities;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -12,6 +13,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -51,14 +53,22 @@ public class Define_Position_Activity extends FragmentActivity implements OnMapR
             @Override
             public void onMapClick(LatLng latLng) {
                 location = new com.example.teamx.letstrack.Application.LatLng(latLng);
-                mMap.addMarker(new MarkerOptions().position(new LatLng(latLng.latitude, latLng.longitude)).title(getIntent().getStringExtra("Position")));
+                mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(latLng.latitude, latLng.longitude))
+                        .title(getIntent()
+                                .getStringExtra("Position")));
+                mMap.addCircle(new CircleOptions()
+                        .center(location.location)
+                        .radius(100)
+                        .strokeColor(Color.RED)
+                        .fillColor(Color.BLUE));
             }
         });
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                //
-//  Define and submit locations for labels on map                                                              //
+//  Define and submit locations for labels on map                                                 //
 //                                                                                                //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
