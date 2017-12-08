@@ -66,6 +66,7 @@ public class Primary_User extends User {
 
     public void verify_phone(Boolean verify) {
         phone_verified = verify;
+        DatabaseHelper.verifyPhone(verify);
     }
 
     public void updatePosition(Position p) {
@@ -131,6 +132,7 @@ public class Primary_User extends User {
         DatabaseHelper.updatePosition(Current_Position);
         return Current_Position;
     }
+
 
     public void Register(UIConnector activity) {
         DatabaseHelper.writeUserToDatabase(activity, this);

@@ -36,7 +36,6 @@ public class DatabaseHelper {
     //Collection/SubCollection names:
 
     private static final String Users = "Users";
-    private static final String Contacts = "Pending";
     private static final String Sent = "Sent";
     private static final String Position = "Position";
     private static final String Accepted = "Accepted";
@@ -75,26 +74,6 @@ public class DatabaseHelper {
         edit.commit();
     }
 
-    public static Primary_User readPreference(SharedPreferences shared_pref) {
-        Primary_User current_user = new Primary_User("", "", "");
-
-        //TODO read from shared preference
-
-        current_user.setEmail_ID(shared_pref.getString("Email", ""));
-        current_user.setContact_No(shared_pref.getString("Contact_No", ""));
-        current_user.setPhone_verified(shared_pref.getBoolean("isPhoneVerified", false));
-
-        if (current_user.isPhone_verified()) {
-            String pos = shared_pref.getString("Home", "");
-            String[] loc = pos.split(",");
-            Position p = new Position("Home", new LatLng(Double.parseDouble(loc[0]), Double.parseDouble(loc[1])));
-
-        } else {
-            current_user.getP_verification().setCode(shared_pref.getString("Code", ""));
-        }
-
-        return current_user;
-    }
 
     public static void writeUserToDatabase(final UIConnector a, Primary_User user) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -149,9 +128,16 @@ public class DatabaseHelper {
                         .getInstance()
                         .getCurrentUser()
                         .getEmail());
+
+        doc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                GeoPoint point = (GeoPoint) task.getResult().get(loc.getPosition_Name());
+                loc.setLocation(new LatLng(point.getLatitude(), point.getLongitude()));
+            }
+        });
     }
 
-    //??????????????
     private static Firebase_Contact get_contact_info_from_email(String email) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         final Firebase_Contact contact = new Firebase_Contact();
@@ -170,22 +156,6 @@ public class DatabaseHelper {
         return contact;
     }
 
-    //Function to observe change in contacts position
-    public static void updateContactPosition(UIConnector a) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DocumentReference doc = db.collection(Users)
-                .document(FirebaseAuth
-                        .getInstance()
-                        .getCurrentUser()
-                        .getEmail());
-
-        doc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                ArrayList contacts = (ArrayList) task.getResult().get(Accepted);
-            }
-        });
-    }
 
     //Function to update the database with users current position
     public static void updatePosition(String Tag) {
@@ -235,9 +205,100 @@ public class DatabaseHelper {
 
         final Firebase_Contact contact;
 
-        final ArrayList<String> sentreq_email = new ArrayList<String>();
+        final ArrayList<String> sentreq_email = getsentrequests();
+
 
         final String sender_email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+
+        DocumentReference doc = db.collection(Users)
+                .document(FirebaseAuth.getInstance()
+                        .getCurrentUser()
+                        .getEmail())
+                .collection(Sent)
+                .document(Sent);
+
+        final DocumentReference doc2 = db.collection(Users)
+                .document(receiver_email)
+                .collection(Pending)
+                .document(Pending);
+
+        db.collection(Users)
+                .document(receiver_email)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        DocumentSnapshot doc3 = task.getResult();
+                        if (!doc3.exists())
+                            a.UpdateUI(false);
+                    }
+                });
+
+
+        sentreq_email.add(receiver_email);
+
+        doc.set(sentreq_email).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    final ArrayList<String> Pending_List = new ArrayList<>();
+
+
+                    doc2.get()
+                            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    ArrayList temp = (ArrayList) task.getResult()
+                                            .get(Pending);
+                                    for (Object email : temp) {
+                                        Pending_List.add((String) email);
+                                    }
+                                }
+                            });
+                    Pending_List.add(FirebaseAuth.getInstance()
+                            .getCurrentUser()
+                            .getEmail());
+                    Map<String, ArrayList<String>> map = new HashMap<>();
+                    map.put(Pending, Pending_List);
+                    doc2.set(map);
+                    a.UpdateUI(true);
+                } else
+                    a.UpdateUI(false);
+            }
+
+        });
+
+    }
+
+    public static ArrayList<String> getpendingrequests() {
+        final ArrayList<String> req = new ArrayList<>();
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection(Users)
+                .document(FirebaseAuth.getInstance().
+                        getCurrentUser()
+                        .getEmail())
+                .collection(Pending)
+                .document(Pending)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        ArrayList temp = (ArrayList) task.getResult().get(Pending);
+                        for (Object email : temp) {
+                            req.add((String) email);
+                        }
+                    }
+                });
+
+        return req;
+    }
+
+    public static ArrayList<String> getsentrequests() {
+        final ArrayList<String> sentreq_email = new ArrayList<>();
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         DocumentReference doc = db.collection(Users)
                 .document(FirebaseAuth.getInstance()
@@ -257,55 +318,19 @@ public class DatabaseHelper {
                         }
                     }
                 });
-
-        sentreq_email.add(receiver_email);
-
-        doc.set(sentreq_email).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    final ArrayList<String> Pendingemail = new ArrayList<>();
-                    DocumentReference doc2 = db.collection(Users)
-                            .document(receiver_email)
-                            .collection(Pending)
-                            .document(Pending);
-
-                    doc2.get()
-                            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    ArrayList temp = (ArrayList) task.getResult()
-                                            .get(Pending);
-                                    for (Object email : temp) {
-                                        Pendingemail.add((String) email);
-                                    }
-                                }
-                            });
-                    Pendingemail.add(FirebaseAuth.getInstance()
-                            .getCurrentUser()
-                            .getEmail());
-                    doc2.set(Pendingemail);
-                    a.UpdateUI(true);
-                }
-
-                else
-                    a.UpdateUI(false);
-            }
-
-        });
-
+        return sentreq_email;
     }
 
-
-    public static void contact_requests(final UIConnector a) {
+    public static void verifyPhone(boolean verify) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         DocumentReference doc = db.collection(Users)
                 .document(FirebaseAuth.getInstance()
                         .getCurrentUser()
-                        .getEmail())
-                .collection(Pending)
-                .document(Pending);
+                        .getEmail());
+        Map<String, Boolean> map = new HashMap<>();
+        map.put("phone_verified", verify);
+        doc.set(map, SetOptions.merge());
     }
 
     public static void readUserinfo(final String email, final Primary_User user) {
@@ -319,26 +344,71 @@ public class DatabaseHelper {
                     user.setContact_No(doc.getString("Contact No"));
                     user.verify_phone(doc.getBoolean("phone_verified"));
                     user.setEmail_ID(email);
-                    //TODO read locations and contact info
+
+                    com.example.teamx.letstrack.Application.Position Home = new Position("Home", null);
+                    DatabaseHelper.Get_Location(Home);
+                    user.updatePosition(Home);
+                    Position Work = new Position("Work", null);
+                    Get_Location(Work);
+                    user.updatePosition(Work);
+                    Position Gym = new Position("Gym", null);
+                    Get_Location(Gym);
+                    user.updatePosition(Gym);
+
                 }
 
             }
         });
     }
 
+    public void AcceptRequests(String email, String username) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        DocumentReference doc = db.collection(Users)
+                .document(FirebaseAuth.getInstance()
+                        .getCurrentUser()
+                        .getEmail())
+                .collection(Pending)
+                .document(Pending);
+
+        ArrayList<String> Pending_List = getpendingrequests();
+
+        Pending_List.remove(email);
+
+        Map<String, ArrayList<String>> map = new HashMap<>();
+        map.put(Pending, Pending_List);
+        doc.set(map);
+
+        DocumentReference doc2 = db.collection(Users).document(email).collection(Sent).document(Sent);
+
+        ArrayList<String> Sent_List = getsentrequests();
+
+        Sent_List.remove(FirebaseAuth.getInstance()
+                .getCurrentUser()
+                .getEmail());
+        map.clear();
+        map.put(Sent, Sent_List);
+
+        doc2.set(map);
+
+
+    }
 
     private static class Firebase_Contact {
         String email;
         String contact_number;
+        String username;
 
-        public Firebase_Contact(String email, String contact_number) {
+        public Firebase_Contact(String email, String contact_number, String username) {
             this.email = email;
             this.contact_number = contact_number;
+            this.username = username;
         }
 
         public Firebase_Contact() {
             email = "";
             contact_number = "";
+            username = "";
         }
 
         public String getEmail() {
@@ -355,6 +425,14 @@ public class DatabaseHelper {
 
         public void setContact_number(String contact_number) {
             this.contact_number = contact_number;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
         }
     }
 
