@@ -17,13 +17,6 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.GeoPoint;
-import com.google.firebase.firestore.SetOptions;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class Define_Position_Activity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -41,7 +34,7 @@ public class Define_Position_Activity extends FragmentActivity implements OnMapR
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        Submit = (Button) findViewById(R.id.btnSubmit);
+        Submit = findViewById(R.id.btnSubmit);
         Submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -76,13 +69,8 @@ public class Define_Position_Activity extends FragmentActivity implements OnMapR
         Intent i = getIntent();
         String name = i.getStringExtra("Position");
 
-        GeoPoint point = new GeoPoint(location.latitude, location.longitude);
 
-        Map<String, Object> map = new HashMap<>();
-
-        map.put(name, point);
-
-        FirebaseFirestore.getInstance().collection("Users").document(FirebaseAuth.getInstance().getUid().toString()).set(map, SetOptions.merge());
+        //FirebaseFirestore.getInstance().collection("Users").document(FirebaseAuth.getInstance().getUid().toString()).set(map, SetOptions.merge());
     }
 
 

@@ -3,6 +3,7 @@ package com.example.teamx.letstrack.Activities;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -21,10 +22,10 @@ public class Settings_Activity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        changePass = (Button) findViewById(R.id.buttonChangePassword);
-        changeContact = (Button) findViewById(R.id.buttonUpdateContacts);
-        changePosition = (Button) findViewById(R.id.buttonUpdatePositions);
-        Logout = (Button) findViewById(R.id.buttonLogout);
+        changePass = findViewById(R.id.buttonChangePassword);
+        changeContact = findViewById(R.id.buttonUpdateContacts);
+        changePosition = findViewById(R.id.buttonUpdatePositions);
+        Logout = findViewById(R.id.buttonLogout);
 
         changePass.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -45,6 +46,7 @@ public class Settings_Activity extends Activity {
             @Override
             public void onClick(View v) {
                 //TODO create Change/Modify Position activity and link
+                Log.d("", "Entering map");
                 startActivity(new Intent(Settings_Activity.this, Define_Position_Activity.class));
                 Toast.makeText(Settings_Activity.this, "Change/Modify position activity is opened", Toast.LENGTH_SHORT).show();
             }

@@ -117,21 +117,18 @@ public class Primary_User extends User {
         float[] results = new float[3];
         Location.distanceBetween(center.latitude, center.longitude, point.latitude, point.longitude, results);
 
-        if (results[0] < radius)
-            return true;
-        else
-            return false;
+        return results[0] < radius;
     }
 
     public String updatePositionTag(com.example.teamx.letstrack.Application.LatLng location) {
         for (int i = 0; i < 3; i++) {
             if (isPosition(positions.get(i).getLocation(), location)) {
                 Current_Position = positions.get(i).getPosition_Name();
-                return Current_Position;
+                break;
             }
         }
-
         Current_Position = Other;
+        DatabaseHelper.updatePosition(Current_Position);
         return Current_Position;
     }
 

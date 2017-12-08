@@ -18,7 +18,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,6 +31,15 @@ import java.util.Map;
  */
 
 public class DatabaseHelper {
+
+
+    //Collection/SubCollection names:
+
+    private static final String Users = "Users";
+    private static final String Contacts = "Pending";
+    private static final String Sent = "Sent";
+    private static final String Position = "Position";
+    private static final String Accepted = "Accepted";
 
     public static void writeSharedPreference(SharedPreferences shared_pref, Primary_User user) {
         SharedPreferences.Editor edit = shared_pref.edit();
@@ -63,9 +74,8 @@ public class DatabaseHelper {
         edit.commit();
     }
 
-    public static Primary_User readPreference(SharedPreferences shared_pref)
-    {
-        Primary_User current_user=new Primary_User("","","");
+    public static Primary_User readPreference(SharedPreferences shared_pref) {
+        Primary_User current_user = new Primary_User("", "", "");
 
         //TODO read from shared preference
 
@@ -91,7 +101,7 @@ public class DatabaseHelper {
         Map<String, Object> usermap = new HashMap<>();
         usermap.put("Email", user.getEmail_ID());
         usermap.put("phone_verified", user.isPhone_verified());
-        usermap.put("Contact No.", user.getP_verification().getPhone());
+        usermap.put("Contact No", user.getP_verification().getPhone());
 
         db.collection("Users")
                 .document(FirebaseAuth.getInstance().getCurrentUser().getEmail())
@@ -112,6 +122,35 @@ public class DatabaseHelper {
         });
     }
 
+    //Add location to Firestore
+    public static void Add_Location(Position loc) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference doc = db.collection(Users)
+                .document(FirebaseAuth
+                        .getInstance()
+                        .getCurrentUser()
+                        .getEmail());
+
+        LatLng location = loc.getLocation();
+        GeoPoint point = new GeoPoint(location.latitude, location.longitude);
+
+        Map<String, Object> map = new HashMap<>();
+
+        map.put(loc.getPosition_Name(), point);
+
+        doc.set(map, SetOptions.merge());
+    }
+
+    public static void Get_Location(final Position loc) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference doc = db.collection(Users)
+                .document(FirebaseAuth
+                        .getInstance()
+                        .getCurrentUser()
+                        .getEmail());
+    }
+
+    //??????????????
     private static Firebase_Contact get_contact_info_from_email(String email) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         final Firebase_Contact contact = new Firebase_Contact();
@@ -123,11 +162,41 @@ public class DatabaseHelper {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         DocumentSnapshot doc = task.getResult();
-                        String phone = (String) doc.get("Contact No.");
+                        String phone = (String) doc.get("Contact No");
                         contact.setContact_number(phone);
                     }
                 });
         return contact;
+    }
+
+    //Function to observe change in contacts position
+    public static void updateContactPosition(UIConnector a) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference doc = db.collection(Users)
+                .document(FirebaseAuth
+                        .getInstance()
+                        .getCurrentUser()
+                        .getEmail());
+
+        doc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                ArrayList contacts = (ArrayList) task.getResult().get(Accepted);
+            }
+        });
+    }
+
+    //Function to update the database with users current position
+    public static void updatePosition(String Tag) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection(Users)
+                .document(FirebaseAuth
+                        .getInstance()
+                        .getCurrentUser()
+                        .getEmail())
+                .collection(Position)
+                .document(Position)
+                .set(Tag);
     }
 
     private static Firebase_Contact get_contact_info_from_phone(String phone) {
@@ -142,8 +211,8 @@ public class DatabaseHelper {
 
         contact.setContact_number(phone);
 
-        db.collection("Users")
-                .whereEqualTo("Contact No.", phone)
+        db.collection(Users)
+                .whereEqualTo("Contact No", phone)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -160,56 +229,47 @@ public class DatabaseHelper {
         return contact;
     }
 
-    public static void addcontact(final UIConnector a, final String receiver_email, String receiver_phone) {
+    public static void sendRequest(final UIConnector a, final String receiver_email) {
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         final Firebase_Contact contact;
 
-        if (receiver_email == null)
-            contact = get_contact_info_from_phone(receiver_phone);
-        else if (receiver_phone == null)
-            contact = get_contact_info_from_email(receiver_email);
-        else
-            contact = new Firebase_Contact(receiver_email, receiver_phone);
-
+        final ArrayList<String> sentreq_email = new ArrayList<String>();
 
         final String sender_email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
 
-        db.collection("Contacts")
-                .document(sender_email)
-                .collection("Pending")
-                .document(receiver_email)
-                .set(contact)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
+        DocumentReference doc = db.collection(Users)
+                .document(FirebaseAuth.getInstance()
+                        .getCurrentUser()
+                        .getEmail())
+                .collection(Sent)
+                .document(Sent);
+
+        doc.get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-
-                        if (task.isSuccessful()) {
-                            Log.d("Firestore", "Sent a contact request from sender to " + receiver_email);
-                            db.collection("Contacts")
-                                    .document(receiver_email)
-                                    .collection("Pending")
-                                    .document().set(contact)
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if (task.isSuccessful())
-                                                Log.d("Firestore", "Request added to pending stack.");
-                                            else
-                                                Log.d("Firestore", "Request not added to pending stack");
-
-                                        }
-                                    });
-                        } else {
-                            Log.d("Firestore", "Failed to send a contact request to " + receiver_email);
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        ArrayList temp = (ArrayList) task.getResult()
+                                .get(Sent);
+                        for (Object email : temp) {
+                            sentreq_email.add((String) email);
                         }
-
-                        a.UpdateUI(task.isSuccessful());
                     }
-
                 });
 
+        sentreq_email.add(receiver_email);
 
+        doc.set(sentreq_email).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful())
+                    a.UpdateUI(true);
+
+                else
+                    a.UpdateUI(false);
+            }
+
+        });
     }
 
     public static void contact_requests(final UIConnector a) {
@@ -233,12 +293,12 @@ public class DatabaseHelper {
     public static void readUserinfo(final String email, final Primary_User user) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        db.collection("Users").document(email).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        db.collection(Users).document(email).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot doc = task.getResult();
-                    user.setContact_No(doc.getString("Contact No."));
+                    user.setContact_No(doc.getString("Contact No"));
                     user.verify_phone(doc.getBoolean("phone_verified"));
                     user.setEmail_ID(email);
                     //TODO read locations and contact info

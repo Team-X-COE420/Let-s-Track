@@ -2,7 +2,8 @@
     <string name="app_name">Let\'s Track</string>
     <string name="title_activity_define_position">Map</string>
     <string name="title_activity_login">Sign in</string>
-
+    <string name="usercollection">Users</string>
+    <string name="contactcollection">Contacts</string>
     <string name="verifyemail">Verify Email Address</string>
     <string name="verifyphone">Verify Contact Number</string>
 
