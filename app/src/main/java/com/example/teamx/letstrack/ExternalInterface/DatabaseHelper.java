@@ -40,6 +40,7 @@ public class DatabaseHelper {
     private static final String Sent = "Sent";
     private static final String Position = "Position";
     private static final String Accepted = "Accepted";
+    private static final String Pending = "Pending";
 
     public static void writeSharedPreference(SharedPreferences shared_pref, Primary_User user) {
         SharedPreferences.Editor edit = shared_pref.edit();
@@ -262,32 +263,49 @@ public class DatabaseHelper {
         doc.set(sentreq_email).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful())
+                if (task.isSuccessful()) {
+                    final ArrayList<String> Pendingemail = new ArrayList<>();
+                    DocumentReference doc2 = db.collection(Users)
+                            .document(receiver_email)
+                            .collection(Pending)
+                            .document(Pending);
+
+                    doc2.get()
+                            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    ArrayList temp = (ArrayList) task.getResult()
+                                            .get(Pending);
+                                    for (Object email : temp) {
+                                        Pendingemail.add((String) email);
+                                    }
+                                }
+                            });
+                    Pendingemail.add(FirebaseAuth.getInstance()
+                            .getCurrentUser()
+                            .getEmail());
+                    doc2.set(Pendingemail);
                     a.UpdateUI(true);
+                }
 
                 else
                     a.UpdateUI(false);
             }
 
         });
+
     }
+
 
     public static void contact_requests(final UIConnector a) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        DocumentReference docRef = db.collection("Contacts").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
-
-        docRef.collection("Pending").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    for (DocumentSnapshot doc : task.getResult()) {
-                        Log.d("Firestore", "Document received with content: " + doc.getData());
-
-                    }
-                }
-            }
-        });
+        DocumentReference doc = db.collection(Users)
+                .document(FirebaseAuth.getInstance()
+                        .getCurrentUser()
+                        .getEmail())
+                .collection(Pending)
+                .document(Pending);
     }
 
     public static void readUserinfo(final String email, final Primary_User user) {
