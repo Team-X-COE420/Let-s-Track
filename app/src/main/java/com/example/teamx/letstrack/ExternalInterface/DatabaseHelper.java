@@ -19,7 +19,6 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
@@ -138,25 +137,6 @@ public class DatabaseHelper {
         });
     }
 
-    private static Firebase_Contact get_contact_info_from_email(String email) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        final Firebase_Contact contact = new Firebase_Contact();
-        contact.setEmail(email);
-        db.collection("Users")
-                .document(email)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        DocumentSnapshot doc = task.getResult();
-                        String phone = (String) doc.get("Contact No");
-                        contact.setContact_number(phone);
-                    }
-                });
-        return contact;
-    }
-
-
     //Function to update the database with users current position
     public static void updatePosition(String Tag) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -168,36 +148,6 @@ public class DatabaseHelper {
                 .collection(Position)
                 .document(Position)
                 .set(Tag);
-    }
-
-    private static Firebase_Contact get_contact_info_from_phone(String phone) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        final Firebase_Contact contact = new Firebase_Contact();
-
-
-        if (phone.startsWith("00"))
-            phone = "+" + phone.substring(2);
-        else if (phone.startsWith("05"))
-            phone = "+971" + phone.substring(1);
-
-        contact.setContact_number(phone);
-
-        db.collection(Users)
-                .whereEqualTo("Contact No", phone)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (DocumentSnapshot doc : task.getResult()) {
-                                String email = (String) doc.get("Email");
-                                contact.setEmail(email);
-                            }
-                        }
-                    }
-                });
-
-        return contact;
     }
 
     public static void sendRequest(final UIConnector a, final String receiver_email) {
@@ -361,6 +311,31 @@ public class DatabaseHelper {
         });
     }
 
+    public static ArrayList<Firebase_Contact> getAcceptedContacts() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        final ArrayList<Firebase_Contact> contacts = new ArrayList<>();
+
+        db.collection(Users)
+                .document(FirebaseAuth.getInstance().
+                        getCurrentUser()
+                        .getEmail())
+                .collection(Accepted)
+                .document(Accepted)
+                .get().
+                addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        DocumentSnapshot document = task.getResult();
+                        ArrayList temp = (ArrayList) document.get(Accepted);
+                        for (Object contact : temp)
+                            contacts.add((Firebase_Contact) contact);
+                    }
+                });
+
+        return contacts;
+    }
+
     public void AcceptRequests(String email, String username) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -379,7 +354,10 @@ public class DatabaseHelper {
         map.put(Pending, Pending_List);
         doc.set(map);
 
-        DocumentReference doc2 = db.collection(Users).document(email).collection(Sent).document(Sent);
+        DocumentReference doc2 = db.collection(Users)
+                .document(email)
+                .collection(Sent)
+                .document(Sent);
 
         ArrayList<String> Sent_List = getsentrequests();
 
@@ -391,23 +369,53 @@ public class DatabaseHelper {
 
         doc2.set(map);
 
+        final ArrayList<Firebase_Contact> contacts = getAcceptedContacts();
+        contacts.add(new Firebase_Contact(email, username));
+
+        Map<String, ArrayList<Firebase_Contact>> map2 = new HashMap<>();
+        map2.put(Accepted, contacts);
+
+        db.collection(Users)
+                .document(FirebaseAuth.getInstance()
+                        .getCurrentUser()
+                        .getEmail())
+                .collection(Accepted)
+                .document(Accepted)
+                .set(map2);
+
+        contacts.clear();
+
+        DocumentReference document = db.collection(Users).document(email).collection(Accepted).document(Accepted);
+        document.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                DocumentSnapshot document = task.getResult();
+                ArrayList temp = (ArrayList) document.get(Accepted);
+                for (Object contact : temp)
+                    contacts.add((Firebase_Contact) contact);
+            }
+        });
+
+        contacts.add(new Firebase_Contact(FirebaseAuth.getInstance().getCurrentUser().getEmail(), FirebaseAuth.getInstance().getCurrentUser().getEmail()));
+
+        document.set(new HashMap<String, ArrayList<Firebase_Contact>>().put(Accepted, contacts));
 
     }
 
     private static class Firebase_Contact {
         String email;
-        String contact_number;
+
         String username;
 
-        public Firebase_Contact(String email, String contact_number, String username) {
+        public Firebase_Contact(String email, String username) {
             this.email = email;
-            this.contact_number = contact_number;
+
             this.username = username;
         }
 
         public Firebase_Contact() {
             email = "";
-            contact_number = "";
+
             username = "";
         }
 
@@ -417,14 +425,6 @@ public class DatabaseHelper {
 
         public void setEmail(String email) {
             this.email = email;
-        }
-
-        public String getContact_number() {
-            return contact_number;
-        }
-
-        public void setContact_number(String contact_number) {
-            this.contact_number = contact_number;
         }
 
         public String getUsername() {
