@@ -35,17 +35,16 @@ public class Home_Screen_Activity extends Activity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_screen);
 
-        readuserfromfirestore();
 
-        message = (TextView) findViewById(R.id.txtmessage);
-        codeexists = (TextView) findViewById(R.id.txtCodeExists);
+        message = findViewById(R.id.txtmessage);
+        codeexists = findViewById(R.id.txtCodeExists);
 
         codeexists.setEnabled(false);
-        settings = (ImageView) findViewById(R.id.imgSettings);
+        settings = findViewById(R.id.imgSettings);
 
-        requests = (ImageView) findViewById(R.id.imgrequests);
+        requests = findViewById(R.id.imgrequests);
 
-        action = (Button) findViewById(R.id.btnaction);
+        action = findViewById(R.id.btnaction);
 
         if (!FirebaseAuth.getInstance().getCurrentUser().isEmailVerified()) {
             message.setText(R.string.verifyemail);
@@ -73,8 +72,7 @@ public class Home_Screen_Activity extends Activity implements View.OnClickListen
         action.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(Home_Screen_Activity.this, "Button Clicked", Toast.LENGTH_SHORT)
-                        .show();
+
                 if (message.getText().equals(getResources().getString(R.string.verifyemail))) {
                     FirebaseAuth.getInstance().getCurrentUser().sendEmailVerification().addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
@@ -110,11 +108,7 @@ public class Home_Screen_Activity extends Activity implements View.OnClickListen
         settings.setOnClickListener(this);
     }
 
-    private void readuserfromfirestore() {
-        current_user = new Primary_User(null, null, null);
-        DatabaseHelper.readUserinfo(FirebaseAuth.getInstance().getCurrentUser().getEmail(), current_user);
 
-    }
 
 
     @Override

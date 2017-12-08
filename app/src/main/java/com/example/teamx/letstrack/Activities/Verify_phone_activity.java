@@ -27,13 +27,14 @@ public class Verify_phone_activity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_verify_phone);
 
-        editTextCode = (EditText) findViewById(R.id.editTextCode);
+        editTextCode = findViewById(R.id.editTextCode);
 
-        buttonCodeSubmit = (Button) findViewById(R.id.buttonCodeSubmit);
+        buttonCodeSubmit = findViewById(R.id.buttonCodeSubmit);
 
         saved_value = getSharedPreferences("Current_User", MODE_PRIVATE);
 
-        current_user = DatabaseHelper.readPreference(saved_value);
+        current_user = new Primary_User(saved_value.getString("Email", ""), saved_value.getString("Contact_No", ""), "");
+        //DatabaseHelper.readPreference(saved_value);
         buttonCodeSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
