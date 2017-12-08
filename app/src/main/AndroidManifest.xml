@@ -15,6 +15,8 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application
         android:allowBackup="true"
@@ -52,7 +54,8 @@
         <activity android:name=".Forgot_Password_Activity" />
         <activity android:name=".Change_Password_Activity" />
         <activity android:name=".Verify_phone_activity" />
-        <activity android:name=".Update_Contact_activity"></activity>
+        <activity android:name=".Update_Contact_activity" />
+        <activity android:name=".Requests_Activity"></activity>
     </application>
 
 </manifest>

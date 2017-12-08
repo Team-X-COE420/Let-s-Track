@@ -8,7 +8,7 @@ public enum Contact_Status {
     Accepted(1),
     Denied(-1),
     Pending(0),
-    NoContact(5);
+    Sent(4);
 
     private final int value;
 

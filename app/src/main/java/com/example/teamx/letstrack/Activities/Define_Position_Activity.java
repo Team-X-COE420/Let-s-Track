@@ -2,6 +2,7 @@ package com.example.teamx.letstrack.Activities;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -12,16 +13,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.GeoPoint;
-import com.google.firebase.firestore.SetOptions;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class Define_Position_Activity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -39,7 +34,7 @@ public class Define_Position_Activity extends FragmentActivity implements OnMapR
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        Submit = (Button) findViewById(R.id.btnSubmit);
+        Submit = findViewById(R.id.btnSubmit);
         Submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -51,22 +46,31 @@ public class Define_Position_Activity extends FragmentActivity implements OnMapR
             @Override
             public void onMapClick(LatLng latLng) {
                 location = new com.example.teamx.letstrack.Application.LatLng(latLng);
-                mMap.addMarker(new MarkerOptions().position(new LatLng(latLng.latitude, latLng.longitude)).title(getIntent().getStringExtra("Position")));
+                mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(latLng.latitude, latLng.longitude))
+                        .title(getIntent()
+                                .getStringExtra("Position")));
+                mMap.addCircle(new CircleOptions()
+                        .center(location.location)
+                        .radius(100)
+                        .strokeColor(Color.RED)
+                        .fillColor(Color.BLUE));
             }
         });
     }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                //
+//  Define and submit locations for labels on map                                                 //
+//                                                                                                //
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private void SubmitLocation() {
         Intent i = getIntent();
         String name = i.getStringExtra("Position");
 
-        GeoPoint point = new GeoPoint(location.latitude, location.longitude);
 
-        Map<String, Object> map = new HashMap<>();
-
-        map.put(name, point);
-
-        FirebaseFirestore.getInstance().collection("Users").document(FirebaseAuth.getInstance().getUid().toString()).set(map, SetOptions.merge());
+        //FirebaseFirestore.getInstance().collection("Users").document(FirebaseAuth.getInstance().getUid().toString()).set(map, SetOptions.merge());
     }
 
 
